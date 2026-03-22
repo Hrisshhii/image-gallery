@@ -13,7 +13,7 @@ const Gallery=()=>{
 
   const images=useMemo(()=>
     Array.from({ length:100 },(_,i)=>
-      `https://picsum.photos/1200/800?random=${i}`
+      `https://picsum.photos/id/${i+15}/1200/800`
     ),[]);
 
   let columnCount=2;
@@ -21,7 +21,7 @@ const Gallery=()=>{
   if (width>=1024) columnCount=4;
   if (width>=1400) columnCount=5;
 
-  const COLUMN_WIDTH=(width-(columnCount-1)*GAP)/columnCount;
+  const COLUMN_WIDTH=(width-(columnCount-3)*GAP)/columnCount;
   const rowCount=Math.ceil(images.length/columnCount);
 
   const rowVirtualizer=useVirtualizer({
@@ -36,6 +36,34 @@ const Gallery=()=>{
     window.addEventListener("resize",handleResize);
     return ()=>window.removeEventListener("resize",handleResize);
   },[]);
+
+  const handleDownload=async (src:string)=>{
+    const img=new Image();
+    img.crossOrigin="anonymous";
+    img.src=src;
+    img.onload=()=>{
+      const canvas=document.createElement("canvas");
+      const ctx=canvas.getContext("2d");
+      canvas.width=img.width;
+      canvas.height=img.height;
+
+      ctx?.drawImage(img,0,0);
+
+      ctx!.font=`${canvas.width*0.03}px Arial`;
+      ctx!.fillStyle="rgba(255,255,255,0.7)";
+      ctx!.textAlign="right";
+      ctx!.fillText("Celebrare",canvas.width-20,canvas.height-20);
+
+      const url=canvas.toDataURL("image/png");
+      const link=document.createElement("a");
+      link.href=url;
+      link.download="celebrare-image.png";
+      link.click();
+    }
+    img.onerror=()=>{
+      alert("Failed to load image");
+    };
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-300 via-gray-100 to-gray-300">
@@ -74,8 +102,15 @@ const Gallery=()=>{
                         width: COLUMN_WIDTH,
                         padding: 12,
                       }}
+                      className="relative group"
                     >
-                      <img src={images[index]} onClick={()=>setSelectedImg(images[index])} className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition duration-500"/>
+                      <img src={images[index]} onClick={()=>setSelectedImg(images[index])} 
+                        onError={(e)=>e.currentTarget.src="https://picsum.photos/seed/fallback/1200/800"}
+                        className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition duration-500"
+                      />
+                      <button onClick={()=>handleDownload(images[index])}
+                        className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded opacity-0 group-hover:opacity-100 cursor-pointer hover:scale-105 transition"
+                      >Download</button>
                     </div>
                   );
                 })}
@@ -84,7 +119,7 @@ const Gallery=()=>{
           })}
         </div>
       </div>
-      <ImageModal image={selectedImg} onClose={()=>setSelectedImg(null)}/>
+      <ImageModal image={selectedImg} onClose={()=>setSelectedImg(null)} onDownload={handleDownload}/>
     </div>
   );
 };

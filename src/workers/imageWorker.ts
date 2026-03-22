@@ -1,5 +1,5 @@
 self.onmessage=async (e:MessageEvent)=>{
-  const {src}=e.data;
+  const {src,id}=e.data;
   try {
     const response=await fetch(src);
     const blob=await response.blob();
@@ -7,6 +7,7 @@ self.onmessage=async (e:MessageEvent)=>{
 
     const canvas=new OffscreenCanvas(bitmap.width,bitmap.height);
     const ctx=canvas.getContext("2d");
+
     ctx?.drawImage(bitmap, 0, 0);
 
     ctx!.font=`${canvas.width*0.03}px Arial`;
@@ -16,9 +17,9 @@ self.onmessage=async (e:MessageEvent)=>{
 
     const finalBlob=await canvas.convertToBlob();
 
-    self.postMessage({blob:finalBlob});
+    self.postMessage({blob:finalBlob,id});
   } catch(err){
     console.log(err);
-    self.postMessage({error:true});
+    self.postMessage({error:true,id});
   }
 };

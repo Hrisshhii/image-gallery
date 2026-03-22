@@ -44,30 +44,28 @@ const Gallery=()=>{
       new URL("../workers/imageWorker.ts",import.meta.url),
       {type:"module"}
     );
-
-    return ()=>{
-      workerRef.current?.terminate();
-    };
-  },[]);
-
-  const handleDownload=(src:string)=>{
-    if (!workerRef.current) return;
-
-    workerRef.current.postMessage({src});
     workerRef.current.onmessage=(e)=>{
       if(e.data.error){
         alert("Processing failed");
         return;
       }
-      const blob=e.data.blob;
-      const url=URL.createObjectURL(blob);
+      const url=URL.createObjectURL(e.data.blob);
 
       const link=document.createElement("a");
       link.href=url;
       link.download="celebrare-image.png";
       link.click();
+      
       URL.revokeObjectURL(url);
-    };
+    }
+
+    return ()=>workerRef.current?.terminate();
+  },[]);
+
+  const handleDownload=(src:string)=>{
+    if(!workerRef.current) return;
+    const id=Date.now();
+    workerRef.current?.postMessage({src,id});
   };
 
   const toggleSelect=(src:string)=>{

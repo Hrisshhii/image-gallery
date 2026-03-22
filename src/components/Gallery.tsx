@@ -11,6 +11,7 @@ const Gallery=()=>{
   const [width,setWidth]=useState(window.innerWidth);
   const [selectedImg,setSelectedImg]=useState<string|null>(null);
   const workerRef=useRef<Worker|null>(null);
+  const [selectImages,setSelectImages]=useState<Set<string>>(new Set());
 
   const images=useMemo(()=>
     Array.from({ length:100 },(_,i)=>
@@ -69,6 +70,23 @@ const Gallery=()=>{
     };
   };
 
+  const toggleSelect=(src:string)=>{
+    setSelectImages((prev)=>{
+      const newSet=new Set(prev);
+      if (newSet.has(src)) newSet.delete(src);
+      else newSet.add(src);
+      return newSet;
+    });
+  };
+
+  const handleSelectAll=()=>{
+    if(selectImages.size===images.length){
+      setSelectImages(new Set());
+    }else{
+      setSelectImages(new Set(images));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-300 via-gray-100 to-gray-300">
       <h1 className="text-5xl font-bold text-center py-6 bg-clip-text text-transparent bg-linear-to-r from-blue-600 via-blue-500/70 to-purple-950">
@@ -106,7 +124,9 @@ const Gallery=()=>{
                         width: COLUMN_WIDTH,
                         padding: 12,
                       }}
-                      className="relative group"
+                      className={`relative group 
+                        ${selectImages.has(images[index])?"ring-4 ring-blue-400 rounded-2xl":""}
+                      `}
                     >
                       <img src={images[index]} onClick={()=>setSelectedImg(images[index])} 
                         onError={(e)=>e.currentTarget.src="https://picsum.photos/seed/fallback/1200/800"}
@@ -114,7 +134,14 @@ const Gallery=()=>{
                       />
                       <button onClick={()=>handleDownload(images[index])}
                         className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded opacity-0 group-hover:opacity-100 cursor-pointer hover:scale-105 transition"
-                      >Download</button>
+                      >
+                        Download
+                      </button>
+
+                      <input type="checkbox" checked={selectImages.has(images[index])}
+                        onChange={()=>toggleSelect(images[index])}
+                        className="absolute top-4 left-4 w-5 h-5 cursor-pointer opacity-0 group-hover:opacity-100"
+                      />
                     </div>
                   );
                 })}
@@ -124,6 +151,18 @@ const Gallery=()=>{
         </div>
       </div>
       <ImageModal image={selectedImg} onClose={()=>setSelectedImg(null)} onDownload={handleDownload}/>
+
+      {selectImages.size>0 && (
+        <div className="fixed bottom-0 left-0 w-full bg-white shadow-lg flex items-center justify-between px-6 py-4 z-50">
+          <div className="flex items-center gap-4">
+            <input type="checkbox" checked={selectImages.size===images.length} onChange={handleSelectAll}/>
+            <span>{selectImages.size} selected</span>
+          </div>
+          <button onClick={()=>{selectImages.forEach((img)=>handleDownload(img))}}
+            className="bg-black text-white px-4 py-2 rounded hover:scale-105 transition"
+          >Download Selected</button>
+        </div>
+      )}
     </div>
   );
 };

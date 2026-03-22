@@ -9,9 +9,9 @@ const GAP=24;
 
 const Gallery=()=>{
   const parentRef=useRef<HTMLDivElement>(null);
+  const workerRef=useRef<Worker|null>(null);
   const [width,setWidth]=useState(window.innerWidth);
   const [selectedImg,setSelectedImg]=useState<string|null>(null);
-  const workerRef=useRef<Worker|null>(null);
   const [selectImages,setSelectImages]=useState<Set<string>>(new Set());
 
   const images=useMemo(()=>

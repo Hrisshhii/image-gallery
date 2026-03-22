@@ -10,6 +10,7 @@ const Gallery=()=>{
   const parentRef=useRef<HTMLDivElement>(null);
   const [width,setWidth]=useState(window.innerWidth);
   const [selectedImg,setSelectedImg]=useState<string|null>(null);
+  const workerRef=useRef<Worker|null>(null);
 
   const images=useMemo(()=>
     Array.from({ length:100 },(_,i)=>
@@ -37,31 +38,34 @@ const Gallery=()=>{
     return ()=>window.removeEventListener("resize",handleResize);
   },[]);
 
-  const handleDownload=async (src:string)=>{
-    const img=new Image();
-    img.crossOrigin="anonymous";
-    img.src=src;
-    img.onload=()=>{
-      const canvas=document.createElement("canvas");
-      const ctx=canvas.getContext("2d");
-      canvas.width=img.width;
-      canvas.height=img.height;
+  useEffect(()=>{
+    workerRef.current=new Worker(
+      new URL("../workers/imageWorker.ts",import.meta.url),
+      {type:"module"}
+    );
 
-      ctx?.drawImage(img,0,0);
+    return ()=>{
+      workerRef.current?.terminate();
+    };
+  },[]);
 
-      ctx!.font=`${canvas.width*0.03}px Arial`;
-      ctx!.fillStyle="rgba(255,255,255,0.7)";
-      ctx!.textAlign="right";
-      ctx!.fillText("Celebrare",canvas.width-20,canvas.height-20);
+  const handleDownload=(src:string)=>{
+    if (!workerRef.current) return;
 
-      const url=canvas.toDataURL("image/png");
+    workerRef.current.postMessage({src});
+    workerRef.current.onmessage=(e)=>{
+      if(e.data.error){
+        alert("Processing failed");
+        return;
+      }
+      const blob=e.data.blob;
+      const url=URL.createObjectURL(blob);
+
       const link=document.createElement("a");
       link.href=url;
       link.download="celebrare-image.png";
       link.click();
-    }
-    img.onerror=()=>{
-      alert("Failed to load image");
+      URL.revokeObjectURL(url);
     };
   };
 

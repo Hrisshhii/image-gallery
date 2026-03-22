@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/incompatible-library */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import ImageModal from "./ImageModel";
 
 const ROW_HEIGHT=220;
 const GAP=24;
@@ -8,10 +9,11 @@ const GAP=24;
 const Gallery=()=>{
   const parentRef=useRef<HTMLDivElement>(null);
   const [width,setWidth]=useState(window.innerWidth);
+  const [selectedImg,setSelectedImg]=useState<string|null>(null);
 
   const images=useMemo(()=>
     Array.from({ length:100 },(_,i)=>
-      `https://picsum.photos/300/200?random=${i}`
+      `https://picsum.photos/1200/800?random=${i}`
     ),[]);
 
   let columnCount=2;
@@ -73,7 +75,7 @@ const Gallery=()=>{
                         padding: 12,
                       }}
                     >
-                      <img src={images[index]} className="w-full h-full object-cover rounded-xl shadow-md"/>
+                      <img src={images[index]} onClick={()=>setSelectedImg(images[index])} className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition duration-500"/>
                     </div>
                   );
                 })}
@@ -82,6 +84,7 @@ const Gallery=()=>{
           })}
         </div>
       </div>
+      <ImageModal image={selectedImg} onClose={()=>setSelectedImg(null)}/>
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import ImageModal from "./ImageModel";
+import ImageCard from "./ImageCard";
 
 const ROW_HEIGHT=220;
 const GAP=24;
@@ -55,7 +56,7 @@ const Gallery=()=>{
       link.href=url;
       link.download="celebrare-image.png";
       link.click();
-      
+
       URL.revokeObjectURL(url);
     }
 
@@ -112,35 +113,20 @@ const Gallery=()=>{
                   display:"flex",
                 }}
               >
-                {Array.from({length:columnCount}).map((_, colIndex)=>{
-                  const index=rowIndex * columnCount+colIndex;
+                {Array.from({length:columnCount}).map((_,colIndex)=>{
+                  const index=rowIndex * columnCount + colIndex;
                   if (index>=images.length) return null;
 
                   return (
-                    <div key={colIndex}
-                      style={{
-                        width: COLUMN_WIDTH,
-                        padding: 12,
-                      }}
-                      className={`relative group 
-                        ${selectImages.has(images[index])?"ring-4 ring-blue-400 rounded-2xl":""}
-                      `}
-                    >
-                      <img src={images[index]} onClick={()=>setSelectedImg(images[index])} 
-                        onError={(e)=>e.currentTarget.src="https://picsum.photos/seed/fallback/1200/800"}
-                        className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition duration-500"
-                      />
-                      <button onClick={()=>handleDownload(images[index])}
-                        className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded opacity-0 group-hover:opacity-100 cursor-pointer hover:scale-105 transition"
-                      >
-                        Download
-                      </button>
-
-                      <input type="checkbox" checked={selectImages.has(images[index])}
-                        onChange={()=>toggleSelect(images[index])}
-                        className="absolute top-4 left-4 w-5 h-5 cursor-pointer opacity-0 group-hover:opacity-100"
-                      />
-                    </div>
+                    <ImageCard
+                      key={colIndex}
+                      src={images[index]}
+                      isSelected={selectImages.has(images[index])}
+                      onSelect={()=>toggleSelect(images[index])}
+                      onClick={()=>setSelectedImg(images[index])}
+                      onDownload={()=>handleDownload(images[index])}
+                      width={COLUMN_WIDTH}
+                    />
                   );
                 })}
               </div>

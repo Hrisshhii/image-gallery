@@ -27,7 +27,7 @@ const Gallery=()=>{
       }
       const fresh=Array.from({length:100},(_,i)=>({
         id:i+15,
-        url:`https://picsum.photos/id/${i+15}/1200/800`,
+        url:`https://picsum.photos/id/${i+15}/1200/800?cacheBust=${Date.now()}`,
       }));
       setImages(fresh.map((img)=>img.url));
       await saveImages(fresh);

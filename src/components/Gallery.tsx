@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/incompatible-library */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import ImageModal from "./ImageModel";
 import ImageCard from "./ImageCard";
+import { getImages, saveImages } from "../db/indexedDB";
 
 const ROW_HEIGHT=220;
 const GAP=24;
@@ -13,11 +14,32 @@ const Gallery=()=>{
   const [width,setWidth]=useState(window.innerWidth);
   const [selectedImg,setSelectedImg]=useState<string|null>(null);
   const [selectImages,setSelectImages]=useState<Set<string>>(new Set());
+  const [images,setImages]=useState<string[]>([]);
+  const [source,setSource]=useState<"cache"|"network">("network");
 
-  const images=useMemo(()=>
-    Array.from({ length:100 },(_,i)=>
-      `https://picsum.photos/id/${i+15}/1200/800`
-    ),[]);
+  const loadImages=async()=>{
+    try{
+      const cached=await getImages();
+      if(cached.length>0){
+        setImages(cached.map((img)=>img.url));
+        setSource("cache");
+        return;
+      }
+      const fresh=Array.from({length:100},(_,i)=>({
+        id:i+15,
+        url:`https://picsum.photos/id/${i+15}/1200/800`,
+      }));
+      setImages(fresh.map((img)=>img.url));
+      await saveImages(fresh);
+      setSource("network");
+    }catch(err){
+      console.error(err);
+    }
+  };
+
+  useEffect(()=>{
+    loadImages();
+  },[]);
 
   let columnCount=2;
   if (width>=640) columnCount=3;
@@ -91,7 +113,9 @@ const Gallery=()=>{
       <h1 className="text-5xl font-bold text-center py-6 bg-clip-text text-transparent bg-linear-to-r from-blue-600 via-blue-500/70 to-purple-950">
         Celebrare
       </h1>
-
+      <p className="text-center text-sm text-gray-600">
+        {source==="cache"?"Loaded from cache":"Loaded from network"}
+      </p>
       <div ref={parentRef} className="h-[calc(100vh-100px)] overflow-auto px-4">
         <div
           style={{

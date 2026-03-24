@@ -110,10 +110,10 @@ const Gallery=()=>{
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-300 via-gray-100 to-gray-300">
-      <h1 className="text-5xl font-bold text-center py-6 bg-clip-text text-transparent bg-linear-to-r from-blue-600 via-blue-500/70 to-purple-950">
+      <h1 className="text-5xl font-bold text-center py-5 bg-clip-text text-transparent bg-linear-to-r from-blue-600 via-blue-500/70 to-purple-950">
         Celebrare
       </h1>
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-gray-600/50">
         {source==="cache"?"Loaded from cache":"Loaded from network"}
       </p>
       <div ref={parentRef} className="h-[calc(100vh-100px)] overflow-auto px-4">

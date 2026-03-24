@@ -1,3 +1,5 @@
+import { addToCache } from "../cache/memoryCache";
+
 type Props={
   src:string;
   isSelected:boolean;
@@ -17,9 +19,10 @@ const ImageCard=({src,isSelected,onSelect,onDownload,onClick,width,}:Props)=>{
     >
       <img
         src={src}
+        onLoad={()=>addToCache(src)}
         onError={(e)=>e.currentTarget.src="https://picsum.photos/seed/fallback/1200/800"}
         onClick={onClick}
-        className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer"
+        className="w-full h-full object-cover rounded-xl shadow-md cursor-pointer transition"
       />
 
       <button
